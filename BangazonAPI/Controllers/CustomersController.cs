@@ -169,7 +169,10 @@ namespace BangazonAPI.Controllers
             }
         }
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> master
         private bool CustomerExists(int id)
         {
             using (SqlConnection conn = Connection)
