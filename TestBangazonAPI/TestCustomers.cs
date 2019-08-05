@@ -15,6 +15,8 @@ namespace TestBangazonAPI
         {
             using (var client = new APIClientProvider().Client)
             {
+                
+                
                 /*
                     ARRANGE
                 */

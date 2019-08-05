@@ -32,37 +32,43 @@ namespace BangazonAPI.Controllers
 
         // GET api/values
         [HttpGet]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> Get(int? customerId, string FirstName, string LastName)
         {
-            using (SqlConnection conn = Connection)
+            string sqlCommandText = @"SELECT a.id, a.FirstName, a.LastName
+                                    FROM Customer a";
+
             {
-                conn.Open();
-                using (SqlCommand cmd = conn.CreateCommand())
+                using (SqlConnection conn = Connection)
                 {
-                    cmd.CommandText = "Write your SQL statement here to get all customers";
-                    SqlDataReader reader = await cmd.ExecuteReaderAsync();
+                    conn.Open();
+                    using (SqlCommand cmd = conn.CreateCommand())
 
-                    List<Customer> customers = new List<Customer>();
-                    while (reader.Read())
+                    //??
                     {
-                        Customer customer = new Customer
+                        cmd.CommandText = sqlCommandText;
+                        SqlDataReader reader = await cmd.ExecuteReaderAsync();
+
+                        List<Customer> customers = new List<Customer>();
+                        while (reader.Read())
                         {
-                            Id = reader.GetInt32(reader.GetOrdinal("Id")),
-                            FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
-                            LastName = reader.GetString(reader.GetOrdinal("LastName")),
-                            // You might have more columns
-                        };
+                            Customer customer = new Customer
+                            {
+                                Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                                FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
+                                LastName = reader.GetString(reader.GetOrdinal("LastName")),
+                                // You might have more columns
+                            };
 
-                        customers.Add(customer);
+                            customers.Add(customer);
+                        }
+
+                        reader.Close();
+
+                        return Ok(customers);
                     }
-
-                    reader.Close();
-
-                    return Ok(customers);
                 }
             }
         }
-
         // GET api/values/5
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(int id)
