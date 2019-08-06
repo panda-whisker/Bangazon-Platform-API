@@ -39,7 +39,8 @@ namespace BangazonAPI.Controllers
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
-                    cmd.CommandText = "Write your SQL statement here to get all customers";
+                    cmd.CommandText = @"SELECT a.Id, a.FirstName, a.LastName
+                                        FROM Customer a"; ;
                     SqlDataReader reader = await cmd.ExecuteReaderAsync();
 
                     List<Customer> customers = new List<Customer>();
