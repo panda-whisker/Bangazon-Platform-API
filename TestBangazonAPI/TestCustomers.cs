@@ -5,6 +5,8 @@ using Xunit;
 using BangazonAPI.Models;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Net.Http;
+using System.Text;
 
 namespace TestBangazonAPI
 {
@@ -65,6 +67,41 @@ namespace TestBangazonAPI
                 */
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
                 Assert.True(customer.Count > 0);
+            }
+        }
+
+        [Fact]
+        public async Task Test_Post_Customer()
+        {
+            using (var client = new APIClientProvider().Client)
+            {
+                Customer Jimmy = new Customer
+                {
+                    FirstName = "david",
+                    LastName = "mike"
+                };
+                var JimmyAsJSON = JsonConvert.SerializeObject(Jimmy);
+
+                /*
+                    ARRANGE
+                */
+
+
+                /*
+                    ACT
+                */
+                var response = await client.PostAsync("/api/customers",
+                    new StringContent(JimmyAsJSON, Encoding.UTF8, "application/json"));
+
+
+                string responseBody = await response.Content.ReadAsStringAsync();
+                var newCustomer = JsonConvert.DeserializeObject<Customer>(responseBody);
+
+                /*
+                    ASSERT
+                */
+                Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+                Assert.Equal(Jimmy.FirstName, newCustomer.FirstName);
             }
         }
     }

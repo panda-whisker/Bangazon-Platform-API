@@ -43,7 +43,7 @@ namespace BangazonAPI.Controllers
                     conn.Open();
                     using (SqlCommand cmd = conn.CreateCommand())
 
-                    //??
+                    
                     {
                         cmd.CommandText = sqlCommandText;
                         SqlDataReader reader = await cmd.ExecuteReaderAsync();
@@ -105,7 +105,7 @@ namespace BangazonAPI.Controllers
             }
         }
 
-        // POST api/values
+        // POST api/customers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Customer customer)
         {
@@ -116,13 +116,15 @@ namespace BangazonAPI.Controllers
                 {
                     // More string interpolation
                     cmd.CommandText = @"
-                        INSERT INTO Customer ()
+                        INSERT INTO Customer (FirstName, LastName)
                         OUTPUT INSERTED.Id
-                        VALUES ()
+                        VALUES (@Firstname, @LastName)
                     ";
                     cmd.Parameters.Add(new SqlParameter("@firstName", customer.FirstName));
+                    cmd.Parameters.Add(new SqlParameter("@LastName", customer.LastName));
 
                     customer.Id = (int) await cmd.ExecuteScalarAsync();
+                    var newId = (int)customer.Id;
 
                     return CreatedAtRoute("GetCustomer", new { id = customer.Id }, customer);
                 }
