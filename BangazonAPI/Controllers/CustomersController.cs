@@ -70,16 +70,20 @@ namespace BangazonAPI.Controllers
             }
         }
         // GET api/values/5
-        [HttpGet("{id}")]
-        public async Task<IActionResult> Get(int id)
+        [HttpGet("{id}", Name ="GetCustomer")]
+        public async Task<IActionResult> Get([FromRoute] int id)
         {
+
             using (SqlConnection conn = Connection)
             {
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
+
                 {
-                    cmd.CommandText = "Write your SQL statement here to get a single customer";
-                    cmd.Parameters.Add(new SqlParameter("@id", id));
+                    cmd.CommandText = @"SELECT Id, FirstName, LastName 
+                                        FROM Customer
+                                        WHERE Id = @customerId";
+                    cmd.Parameters.Add(new SqlParameter("@customerId", id));
                     SqlDataReader reader = await cmd.ExecuteReaderAsync();
 
                     Customer customer = null;
@@ -169,10 +173,7 @@ namespace BangazonAPI.Controllers
             }
         }
 
-<<<<<<< HEAD
 
-=======
->>>>>>> master
         private bool CustomerExists(int id)
         {
             using (SqlConnection conn = Connection)
