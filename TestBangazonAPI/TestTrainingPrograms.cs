@@ -36,5 +36,34 @@ namespace TestBangazonAPI
                 Assert.True(trainingPrograms.Count > 0);
             }
         }
+        [Fact]
+        public async Task Test_Get_One_TrainingProgram()
+        {
+            using (var client = new APIClientProvider().Client)
+            {
+                /*
+                    ARRANGE
+                */
+
+
+                /*
+                    ACT
+                */
+                var response = await client.GetAsync("/api/trainingPrograms/1");
+
+
+                string responseBody = await response.Content.ReadAsStringAsync();
+                var trainingProgram = JsonConvert.DeserializeObject<TrainingProgram>(responseBody);
+
+                /*
+                    ASSERT
+                */
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                Assert.Equal("York University", trainingProgram.Name);
+            }
+        }
+
+
+
     }
 }
