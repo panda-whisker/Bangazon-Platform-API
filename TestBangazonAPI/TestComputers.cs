@@ -61,9 +61,9 @@ namespace TestBangazonAPI
                     ASSERT
                 */
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                Assert.Equal("YRV-483", computer.Make);
-                Assert.Equal("Oyondu", computer.Manufacturer);
-                Assert.Equal(new DateTime(2015,08,11, 00,00,00,000), computer.PurchaseDate);
+                Assert.Equal(computer.Make, computer.Make);
+                Assert.Equal(computer.Manufacturer, computer.Manufacturer);
+                Assert.Equal(new DateTime(2019, 06, 06, 00, 00, 00, 0000000), computer.PurchaseDate);
                 Assert.NotNull(computer);
             }
         }
