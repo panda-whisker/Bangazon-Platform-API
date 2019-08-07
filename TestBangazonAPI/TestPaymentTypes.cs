@@ -117,7 +117,7 @@ namespace TestBangazonAPI
                 var ModifiedVisaAsJSON = JsonConvert.SerializeObject(ModifiedVisa);
 
                 var response = await client.PutAsync(
-                    "/api/paymentType/5",
+                    "/api/paymentType/1",
                     new StringContent(ModifiedVisaAsJSON, Encoding.UTF8, "application/json")
                 );
                 string responseBody = await response.Content.ReadAsStringAsync();
@@ -127,7 +127,7 @@ namespace TestBangazonAPI
                 /*
                     GET section
                  */
-                var GetVisa = await client.GetAsync("/api/paymentType/5");
+                var GetVisa = await client.GetAsync("/api/paymentType/1");
                 GetVisa.EnsureSuccessStatusCode();
 
                 string GetVisaBody = await GetVisa.Content.ReadAsStringAsync();

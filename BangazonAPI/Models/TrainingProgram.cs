@@ -8,14 +8,16 @@ namespace BangazonAPI.Models
     {
         public int Id { get; set; }
 
+
         [Required]
         public string Name { get; set; }
-
         [Required]
         public DateTime StartDate { get; set; }
+        [Required]
         public DateTime EndDate { get; set; }
+        [Required]
         public int MaxAttendees { get; set; }
 
-        List<Employee> AttendingEmployees { get; set; } = new List<Employee>();
+      //  List<Employee> AttendingEmployees { get; set; } = new List<Employee>();
     }
 }
