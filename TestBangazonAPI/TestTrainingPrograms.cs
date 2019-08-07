@@ -114,6 +114,47 @@ namespace TestBangazonAPI
             }
         }
 
+        [Fact]
+        public async Task Test_Modify_TrainingProgram()
+        {
+            // New eating habit value to change to and test
+            string NewProgram = "Vanderbilt";
+
+            using (var client = new APIClientProvider().Client)
+            {
+                /*
+                    PUT section
+                 */
+               TrainingProgram ModifiedProgram = new TrainingProgram
+                {
+                    Make = NewMake,
+                    Manufacturer = "Apple",
+                    PurchaseDate = new DateTime(2019, 06, 06, 00, 00, 00, 000),
+                    DecomissionDate = new DateTime(2020, 08, 06, 00, 00, 00, 000)
+                };
+                var ModifiedAppleAsJSON = JsonConvert.SerializeObject(ModifiedApple);
+
+                var response = await client.PutAsync(
+                    "/api/computers/2",
+                    new StringContent(ModifiedAppleAsJSON, Encoding.UTF8, "application/json")
+                );
+                string responseBody = await response.Content.ReadAsStringAsync();
+
+                Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+
+                /*
+                    GET section
+                 */
+                var GetButter = await client.GetAsync("/api/computers/2");
+                GetButter.EnsureSuccessStatusCode();
+
+                string GetButterBody = await GetButter.Content.ReadAsStringAsync();
+                Computer NewApple = JsonConvert.DeserializeObject<Computer>(GetButterBody);
+
+                Assert.Equal(HttpStatusCode.OK, GetButter.StatusCode);
+                Assert.Equal(NewMake, NewApple.Make);
+            }
+        }
 
 
     }
