@@ -92,7 +92,45 @@ namespace TestBangazonAPI
                 //Assert.Equal(HttpStatusCode.NoContent, deleteResponse.StatusCode);
             }
         }
+        [Fact]
+        public async Task Test_Modify_PaymentType()
+        {
+            // New shoe name value to change to and test
+            string NewName = "Loafer";
 
+            using (var client = new APIClientProvider().Client)
+            { 
+                /*
+                      PUT section
+                   */
+                ProductType ModifiedShoe = new ProductType
+        {
+            Name = NewName       
+        };
+
+        var ModifiedShoeAsJSON = JsonConvert.SerializeObject(ModifiedShoe);
+
+        var response = await client.PutAsync(
+            "/api/productType/4",
+            new StringContent(ModifiedShoeAsJSON, Encoding.UTF8, "application/json")
+        );
+        string responseBody = await response.Content.ReadAsStringAsync();
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+
+                /*
+                    GET section
+                 */
+                var GetShoe = await client.GetAsync("/api/productType/4");
+        GetShoe.EnsureSuccessStatusCode();
+
+                string GetShoeBody = await GetShoe.Content.ReadAsStringAsync();
+        ProductType NewShoe = JsonConvert.DeserializeObject<ProductType>(GetShoeBody);
+
+        Assert.Equal(HttpStatusCode.OK, GetShoe.StatusCode);
+                Assert.Equal(NewName, NewShoe.Name);
+            }
+}
 
     }
 }
