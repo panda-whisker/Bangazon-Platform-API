@@ -12,7 +12,6 @@ namespace BangazonAPI.Models
         [Required]
         public int AcctNumber { get; set; }
 
-        [Required]
         public int CustomerId { get; set; }
     }
 }
