@@ -61,7 +61,7 @@ namespace TestBangazonAPI
                     ASSERT
                 */
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                Assert.Equal("York University", trainingProgram.Name);
+                Assert.Equal("Vanderbilt", trainingProgram.Name);
             }
         }
 
@@ -76,7 +76,7 @@ namespace TestBangazonAPI
                 */
                 TrainingProgram Program = new TrainingProgram
                 {
-                    Name = "Treveccll",
+                    Name = "Vanderbilt",
                     StartDate = new DateTime(2015, 08, 11, 00, 00, 00, 000),
                     EndDate = new DateTime(2016, 07, 13, 00, 00, 00, 000),
                     MaxAttendees = 55,
