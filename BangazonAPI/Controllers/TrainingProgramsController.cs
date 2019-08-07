@@ -103,7 +103,6 @@ namespace BangazonAPI.Controllers
             }
         }
 
-        // POST api/values
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] TrainingProgram trainingProgram)
         {
@@ -113,13 +112,15 @@ namespace BangazonAPI.Controllers
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
                     // More string interpolation
-                    cmd.CommandText = @"INSERT INTO TrainingProgram (Name, StartDate, EndDate, MaxAttendees)
-                                        OUTPUT INSERTED.Id
-                                        VALUES (@Name, @StartDate, @EndDate, @MaxAttendees)"; ;
-                    cmd.Parameters.Add(new SqlParameter("@Name", trainingProgram.Name));
-                    cmd.Parameters.Add(new SqlParameter("@StartDate", trainingProgram.StartDate));
-                    cmd.Parameters.Add(new SqlParameter("@EndDate", trainingProgram.EndDate));
-                    cmd.Parameters.Add(new SqlParameter("@MaxAttendees", trainingProgram.MaxAttendees));
+                    cmd.CommandText = @"
+                        INSERT INTO TrainingProgram (Name, StartDate, EndDate, MaxAttendees)
+                        OUTPUT INSERTED.Id
+                        VALUES (@name, @startDate, @endDate, @maxAttendees);
+                    ";
+                    cmd.Parameters.Add(new SqlParameter("@name", trainingProgram.Name));
+                    cmd.Parameters.Add(new SqlParameter("@startDate", trainingProgram.StartDate));
+                    cmd.Parameters.Add(new SqlParameter("@endDate", trainingProgram.EndDate));
+                    cmd.Parameters.Add(new SqlParameter("@maxAttendees", trainingProgram.MaxAttendees));
 
                     trainingProgram.Id = (int)await cmd.ExecuteScalarAsync();
 
