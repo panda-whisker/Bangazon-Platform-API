@@ -87,9 +87,9 @@ namespace TestBangazonAPI
                 Assert.Equal(HttpStatusCode.Created, response.StatusCode);
                 Assert.Equal(Shoe.Name, NewShoe.Name);
 
-                //var deleteResponse = await client.DeleteAsync($"/api/productType/{NewShoe.Id}");
+                var deleteResponse = await client.DeleteAsync($"/api/productType/{NewShoe.Id}");
 
-                //Assert.Equal(HttpStatusCode.NoContent, deleteResponse.StatusCode);
+                Assert.Equal(HttpStatusCode.NoContent, deleteResponse.StatusCode);
             }
         }
         [Fact]
