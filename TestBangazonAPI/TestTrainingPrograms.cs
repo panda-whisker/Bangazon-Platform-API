@@ -127,16 +127,15 @@ namespace TestBangazonAPI
                  */
                TrainingProgram ModifiedProgram = new TrainingProgram
                 {
-                    Make = NewMake,
-                    Manufacturer = "Apple",
-                    PurchaseDate = new DateTime(2019, 06, 06, 00, 00, 00, 000),
-                    DecomissionDate = new DateTime(2020, 08, 06, 00, 00, 00, 000)
+                    Name = NewProgram,              
+                    StartDate = new DateTime(2019, 06, 06, 00, 00, 00, 000),
+                    EndDate = new DateTime(2020, 08, 06, 00, 00, 00, 000)
                 };
-                var ModifiedAppleAsJSON = JsonConvert.SerializeObject(ModifiedApple);
+                var ModifiedProgramAsJSON = JsonConvert.SerializeObject(ModifiedProgram);
 
                 var response = await client.PutAsync(
-                    "/api/computers/2",
-                    new StringContent(ModifiedAppleAsJSON, Encoding.UTF8, "application/json")
+                    "/api/trainingprograms/1",
+                    new StringContent(ModifiedProgramAsJSON, Encoding.UTF8, "application/json")
                 );
                 string responseBody = await response.Content.ReadAsStringAsync();
 
@@ -145,14 +144,14 @@ namespace TestBangazonAPI
                 /*
                     GET section
                  */
-                var GetButter = await client.GetAsync("/api/computers/2");
-                GetButter.EnsureSuccessStatusCode();
+                var Training = await client.GetAsync("/api/trainingprograms/1");
+                Training.EnsureSuccessStatusCode();
 
-                string GetButterBody = await GetButter.Content.ReadAsStringAsync();
-                Computer NewApple = JsonConvert.DeserializeObject<Computer>(GetButterBody);
+                string GetTrainingBody = await Training.Content.ReadAsStringAsync();
+                TrainingProgram NewTraining = JsonConvert.DeserializeObject<TrainingProgram>(GetTrainingBody);
 
-                Assert.Equal(HttpStatusCode.OK, GetButter.StatusCode);
-                Assert.Equal(NewMake, NewApple.Make);
+                Assert.Equal(HttpStatusCode.OK, Training.StatusCode);
+                Assert.Equal(NewProgram, NewTraining.Name);
             }
         }
 
