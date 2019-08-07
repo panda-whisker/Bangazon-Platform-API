@@ -132,29 +132,29 @@ namespace TestBangazonAPI
             }
         }
          
-        [Fact]
-        public async Task Test_Get_NonExistant_ProductType_Fails()
-        {
+        //[Fact]
+        //public async Task Test_Get_NonExistant_ProductType_Fails()
+        //{
             
-            using (var client = new APIClientProvider().Client)
-            {
-                var response = await client.GetAsync("/api/productType/999999999");
+        //    using (var client = new APIClientProvider().Client)
+        //    {
+        //        var response = await client.GetAsync("/api/productType/999999999");
 
-                Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-            }
-        }
+        //        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        //    }
+        //}
 
-        [Fact]
-        public async Task Test_Delete_NonExistant_ProductType_Fails()
-        {
+        //[Fact]
+        //public async Task Test_Delete_NonExistant_ProductType_Fails()
+        //{
 
-            using (var client = new APIClientProvider().Client)
-            {
-                var deleteResponse = await client.DeleteAsync("/api/productType/600000");
-                Assert.False(deleteResponse.IsSuccessStatusCode);
-                Assert.Equal(HttpStatusCode.NotFound, deleteResponse.StatusCode);
-            }
-        }
+        //    using (var client = new APIClientProvider().Client)
+        //    {
+        //        var deleteResponse = await client.DeleteAsync("/api/productType/600000");
+        //        Assert.False(deleteResponse.IsSuccessStatusCode);
+        //        Assert.Equal(HttpStatusCode.NotFound, deleteResponse.StatusCode);
+        //    }
+        //}
 
 
     }
