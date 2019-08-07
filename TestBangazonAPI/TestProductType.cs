@@ -61,6 +61,37 @@ namespace TestBangazonAPI
             }
         }
 
+        [Fact]
+        public async Task Test_Create_And_Delete_ProductType()
+        {
+
+            using (var client = new APIClientProvider().Client)
+            {
+                ProductType Shoe = new ProductType
+                {
+                    Name = "Shoe"
+                };
+                var ShoeAsJSON = JsonConvert.SerializeObject(Shoe);
+
+                var response = await client.PostAsync(
+                    "/api/productType",
+                    new StringContent(ShoeAsJSON, Encoding.UTF8, "application/json")
+                    );
+
+                string responseBody = await response.Content.ReadAsStringAsync();
+                var NewShoe = JsonConvert.DeserializeObject<ProductType>(responseBody);
+
+                /*
+                    ASSERT
+                */
+                Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+                Assert.Equal(Shoe.Name, NewShoe.Name);
+
+                //var deleteResponse = await client.DeleteAsync($"/api/productType/{NewShoe.Id}");
+
+                //Assert.Equal(HttpStatusCode.NoContent, deleteResponse.StatusCode);
+            }
+        }
 
 
     }
