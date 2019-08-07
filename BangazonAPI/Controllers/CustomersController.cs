@@ -39,8 +39,8 @@ namespace BangazonAPI.Controllers
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
-                    cmd.CommandText = @"SELECT a.Id, a.FirstName, a.LastName
-                                        FROM Customer a"; ;
+                    cmd.CommandText = @"SELECT c.Id, c.FirstName, c.LastName
+                                        FROM Customer c";
                     SqlDataReader reader = await cmd.ExecuteReaderAsync();
 
                     List<Customer> customers = new List<Customer>();
