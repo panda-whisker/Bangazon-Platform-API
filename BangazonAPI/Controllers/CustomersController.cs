@@ -32,7 +32,7 @@ namespace BangazonAPI.Controllers
 
         // GET api/values
         [HttpGet]
-        public async Task<IActionResult> Get( string q)
+        public async Task<IActionResult> Get(string q)
         {
             string SqlCommandText = @" 
                 SELECT   c.Id as customerId, c.FirstName as First, c.LastName as Last,
@@ -51,16 +51,10 @@ namespace BangazonAPI.Controllers
             {
                 using (SqlConnection conn = Connection)
                 {
-<<<<<<< HEAD
                     conn.Open();
                     using (SqlCommand cmd = conn.CreateCommand())
-=======
-                    cmd.CommandText = @"SELECT c.Id, c.FirstName, c.LastName
-                                        FROM Customer c";
-                    SqlDataReader reader = await cmd.ExecuteReaderAsync();
->>>>>>> master
 
-                    
+
                     {
                         cmd.CommandText = SqlCommandText;
                         if (q != null)
@@ -74,19 +68,19 @@ namespace BangazonAPI.Controllers
                         {
                             Customer customer = new Customer
                             {
-                                Id = reader.GetInt32(reader.GetOrdinal("Id")),
-                                FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
-                                LastName = reader.GetString(reader.GetOrdinal("LastName")),
-                              
+                                Id = reader.GetInt32(reader.GetOrdinal("customerId")),
+                                FirstName = reader.GetString(reader.GetOrdinal("First")),
+                                LastName = reader.GetString(reader.GetOrdinal("Last")),
+
                                 // You might have more columns
                             };
                             PaymentType payment = new PaymentType
                             {
                                 Id = reader.GetInt32(reader.GetOrdinal("Id")),
-                                Name = reader.GetString(reader.GetOrdinal("Name")),
+                                Name = reader.GetString(reader.GetOrdinal("paymentName")),
                                 AcctNumber = reader.GetInt32(reader.GetOrdinal("AcctNumber"))
                             };
-                            if( customers.Any(z => z.Id == customer.Id))
+                            if (customers.Any(z => z.Id == customer.Id))
                             {
                                 //?
                                 Customer ExistingCustomer = customers.Find(z => z.Id == customer.Id);
@@ -117,7 +111,7 @@ namespace BangazonAPI.Controllers
             }
             string CommandText;
 
-            if (_include == "products" && _include == "payments")
+            if ( _include == "payments")
             {
                 CommandText = @"
                SELECT   c.Id as customerId, c.FirstName as First, c.LastName as Last,
@@ -131,7 +125,8 @@ namespace BangazonAPI.Controllers
             {
                 CommandText = @"
                 SELECT p.Id as PaymentId, p.[Name] as paymentType, p.AcctNumber as PaymentAcc
-                FROM PaymentType p";
+                FROM PaymentType p
+                JOIN customer c ON c.id = p.CustomerId";
             }
 
             using (SqlConnection conn = Connection)
@@ -140,7 +135,7 @@ namespace BangazonAPI.Controllers
                 using (SqlCommand cmd = conn.CreateCommand())
 
                 {
-                    cmd.CommandText = $"{CommandText} WHERE p.Id = c.Id";
+                    cmd.CommandText = $"{CommandText} WHERE p.C= c.Id";
                     cmd.Parameters.Add(new SqlParameter("@customerId", id));
                     SqlDataReader reader = cmd.ExecuteReader();
 
@@ -154,7 +149,7 @@ namespace BangazonAPI.Controllers
                                 Id = reader.GetInt32(reader.GetOrdinal("Id")),
                                 FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
                                 LastName = reader.GetString(reader.GetOrdinal("LastName")),
-                              
+
                                 // You might have more columns
                             };
 
@@ -179,8 +174,9 @@ namespace BangazonAPI.Controllers
 
                         reader.Close();
 
-                        return Ok(customer);
+
                     }
+                    return Ok(customer);
                 }
             }
         }
@@ -203,7 +199,7 @@ namespace BangazonAPI.Controllers
                     cmd.Parameters.Add(new SqlParameter("@firstName", customer.FirstName));
                     cmd.Parameters.Add(new SqlParameter("@LastName", customer.LastName));
 
-                    customer.Id = (int) await cmd.ExecuteScalarAsync();
+                    customer.Id = (int)await cmd.ExecuteScalarAsync();
                     var newId = (int)customer.Id;
 
                     return CreatedAtRoute("GetCustomer", new { id = customer.Id }, customer);
