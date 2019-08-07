@@ -61,7 +61,39 @@ namespace BangazonAPI.Controllers
             }
         }
 
-        // GET: api/paymentType/2
+        // GET: api/productType/2
+        [HttpGet("{id}", Name = "GetProductType")]
+        public async Task<IActionResult> Get([FromRoute] int id)
+        {
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @"SELECT Id, [Name]
+                                        FROM ProductType
+                                        WHERE Id = @id";
+                    cmd.Parameters.Add(new SqlParameter("@id", id));
+                    SqlDataReader reader = cmd.ExecuteReader();
+
+                    ProductType productType = null;
+
+                    if (reader.Read())
+                    {
+                        productType = new ProductType
+                        {
+                            Id = reader.GetInt32(reader.GetOrdinal("Id")),                            
+                            Name = reader.GetString(reader.GetOrdinal("Name"))                           
+                        };
+                    }
+                    reader.Close();
+
+                    return Ok(productType);
+                }
+            }
+        }
+
+        // POST: api/paymentType
 
     }
 }
