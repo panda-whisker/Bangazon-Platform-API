@@ -100,7 +100,7 @@ namespace TestBangazonAPI
         [Fact]
         public async Task Test_Modify_PaymentType()
         {
-            // New eating habit value to change to and test
+            // New account number value to change to and test
             int NewAcctNumber = 135792468;
 
             using (var client = new APIClientProvider().Client)
