@@ -9,5 +9,6 @@ namespace BangazonAPI.Models
 
         [Required]
         public string Name { get; set; }
+        public List<PaymentType> payments { get; set; } = new List<PaymentType>();
     }
 }
