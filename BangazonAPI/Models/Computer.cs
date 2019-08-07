@@ -15,7 +15,6 @@ namespace BangazonAPI.Models
         [Required]
         public DateTime PurchaseDate { get; set; }
 
-        [Required]
         public DateTime? DecomissionDate { get; set; }
     }
 }

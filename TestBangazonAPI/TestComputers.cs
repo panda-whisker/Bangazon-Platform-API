@@ -125,6 +125,7 @@ namespace TestBangazonAPI
                 Assert.Equal(HttpStatusCode.Created, response.StatusCode);
                 Assert.Equal(Apple.Make, NewApple.Make);
                 Assert.Equal(Apple.Manufacturer, NewApple.Manufacturer);
+                // Keep this block in mind, if it were to fail again. 
                 Assert.Equal(Apple.PurchaseDate, NewApple.PurchaseDate);
                 Assert.Equal(Apple.DecomissionDate, NewApple.DecomissionDate);
 
