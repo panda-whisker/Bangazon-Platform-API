@@ -51,8 +51,14 @@ namespace BangazonAPI.Controllers
             {
                 using (SqlConnection conn = Connection)
                 {
+<<<<<<< HEAD
                     conn.Open();
                     using (SqlCommand cmd = conn.CreateCommand())
+=======
+                    cmd.CommandText = @"SELECT c.Id, c.FirstName, c.LastName
+                                        FROM Customer c";
+                    SqlDataReader reader = await cmd.ExecuteReaderAsync();
+>>>>>>> master
 
                     
                     {
