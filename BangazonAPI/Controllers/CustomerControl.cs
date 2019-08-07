@@ -13,11 +13,11 @@ namespace BangazonAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class CustomersController : ControllerBase
+    public class CustomerController : ControllerBase
     {
         private readonly IConfiguration _config;
 
-        public CustomersController(IConfiguration config)
+        public CustomerController(IConfiguration config)
         {
             _config = config;
         }
@@ -56,46 +56,56 @@ namespace BangazonAPI.Controllers
                         cmd.Parameters.Add(new SqlParameter("@q", $"%{q}"));
                     }
 
-                    if (_include != null)
-                    {
-                        SqlCommandText = @" 
-                              SELECT   c.Id as customerId, c.FirstName as First, c.LastName as Last,
-                                p.[Name] as paymentName, p.AcctNumber, p.Id
-               
-                             FROM customer c
-                             JOIN PaymentType p ON c.id = p.CustomerId
-                                ";
-                        cmd.Parameters.Add(new SqlParameter("@q", $"%{SqlCommandText}"));
-                    }
 
                     cmd.CommandText = SqlCommandText;
-                            SqlDataReader reader = await cmd.ExecuteReaderAsync();
+                    SqlDataReader reader = await cmd.ExecuteReaderAsync();
 
-                            List<Customer> customers = new List<Customer>();
+                    List<Customer> customers = new List<Customer>();
+
                     while (reader.Read())
                     {
-                        if(customers == null)
-                        { 
-                        Customer customer = new Customer
+                        if (customers == null)
                         {
-                            Id = reader.GetInt32(reader.GetOrdinal("customerId")),
-                            FirstName = reader.GetString(reader.GetOrdinal("First")),
-                            LastName = reader.GetString(reader.GetOrdinal("Last")),
+                            Customer customer = new Customer
+                            {
+                                Id = reader.GetInt32(reader.GetOrdinal("customerId")),
+                                FirstName = reader.GetString(reader.GetOrdinal("First")),
+                                LastName = reader.GetString(reader.GetOrdinal("Last")),
 
-                            // You might have more columns
-                        };
-                        customers.Add(customer);
-                    }
-                    reader.Close();
-                    return Ok(customers);
+                                // You might have more columns
+                            };
+                            PaymentType payment = new PaymentType
+                            {
+                                Id = reader.GetInt32(reader.GetOrdinal("paymentId")),
+                                Name = reader.GetString(reader.GetOrdinal("paymentName")),
+                                AcctNumber = reader.GetInt32(reader.GetOrdinal("paymentName"))
+                            };
 
-                          
+                            if (customers.Any(z => z.Id == customer.Id))
+                            {
+                                Customer ExistingCustomer = customers.Find(z => z.Id == customer.Id);
+                                ExistingCustomer.Payments.Add(payment);
+                            }
+                            else
+                            {
+                                customer.Payments.Add(payment);
+                                customers.Add(customer);
+                            }
+
+
+                            customers.Add(customer);
                         }
+                        reader.Close();
+                        return Ok(customers);
+
+
                     }
                 }
+            }
+        }
 
-        // GET api/values/5
-        [HttpGet("{id}", Name = "GetCustomer")]
+
+       [HttpGet("{id}", Name = "GetCustomer")]
         public IActionResult Get([FromRoute] int id, string _include)
 
         {
@@ -117,6 +127,13 @@ namespace BangazonAPI.Controllers
                                            LEFT OUTER JOIN PaymentType p
                                                ON p.CustomerId = c.Id";
                 }
+                else
+                {
+                    SqlCommandText = @"
+                        SELECT c.Id, c.FirstName, c.LastName
+                            FROM customer c";
+                }
+
                 using (SqlConnection conn = Connection)
                 {
                     conn.Open();
@@ -132,71 +149,46 @@ namespace BangazonAPI.Controllers
                         SqlDataReader reader = cmd.ExecuteReader();
 
                         Customer customer = null;
-                        if (reader.Read())
+                        while (reader.Read())
                         {
-                            Customer customer1 = new Customer
+                            if (customer == null)
                             {
-                                Id = reader.GetInt32(reader.GetOrdinal("Id")),
-                                FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
-                                LastName = reader.GetString(reader.GetOrdinal("LastName")),
+                                Customer customer1 = new Customer
+                                {
+                                    Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                                    FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
+                                    LastName = reader.GetString(reader.GetOrdinal("LastName")),
 
-                                // You might have more columns
-                            };
-
-                        }
-
-                        if (_include == "Products" && _include == "payments")
-                        {
-                            if (!reader.IsDBNull(reader.GetOrdinal("Id")))
-                            {
-                                customer.payments.Add(
-                                    new PaymentType
-                                    {
-                                        Id = reader.GetInt32(reader.GetOrdinal("Id")),
-                                        Name = reader.GetString(reader.GetOrdinal("Name")),
-                                        AcctNumber = reader.GetInt32(reader.GetOrdinal("AcctNumber")),
-                                        CustomerId = reader.GetInt32(reader.GetOrdinal("customerId"))
-                                    });
+                                    // You might have more columns
+                                };
 
                             }
-                        }
 
+                            if (_include == "Products" && _include == "payments")
+                            {
+                                if (!reader.IsDBNull(reader.GetOrdinal("Id")))
+                                {
+                                    customer.Payments.Add(
+                                        new PaymentType
+                                        {
+                                            Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                                            Name = reader.GetString(reader.GetOrdinal("Name")),
+                                            AcctNumber = reader.GetInt32(reader.GetOrdinal("AcctNumber")),
+                                            CustomerId = reader.GetInt32(reader.GetOrdinal("customerId"))
+                                        });
+
+                                }
+                            }
+                        }
 
                         reader.Close();
 
                         return Ok(customer);
                     }
                 }
-            }
+            } }
 
-        }
-        // POST api/customers
-        [HttpPost]
-        public async Task<IActionResult> Post([FromBody] Customer customer)
-        {
-            using (SqlConnection conn = Connection)
-            {
-                conn.Open();
-                using (SqlCommand cmd = conn.CreateCommand())
-                {
-                    // More string interpolation
-                    cmd.CommandText = @"
-                        INSERT INTO Customer (FirstName, LastName)
-                        OUTPUT INSERTED.Id
-                        VALUES (@Firstname, @LastName)
-                    ";
-                    cmd.Parameters.Add(new SqlParameter("@firstName", customer.FirstName));
-                    cmd.Parameters.Add(new SqlParameter("@LastName", customer.LastName));
-
-                    customer.Id = (int)await cmd.ExecuteScalarAsync();
-                    var newId = (int)customer.Id;
-
-                    return CreatedAtRoute("GetCustomer", new { id = customer.Id }, customer);
-                }
-            }
-        }
-
-        // PUT api/values/5
+  // PUT api/values/5
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(int id, [FromBody] Customer customer)
         {
