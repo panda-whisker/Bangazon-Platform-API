@@ -103,17 +103,14 @@ namespace TestBangazonAPI
                 Assert.Equal(HttpStatusCode.Created, response.StatusCode);
                 Assert.Equal(Program.Name, NewProgram.Name);
                 Assert.Equal(Program.MaxAttendees, NewProgram.MaxAttendees);
-                
 
-                /*
-                    ACT
-                */
-                //var deleteResponse = await client.DeleteAsync($"/api/trainingPrograms/{NewProgram.Id}");
+
+                var deleteResponse = await client.DeleteAsync($"/api/trainingPrograms/{NewProgram.Id}");
 
                 /*
                     ASSERT
                 */
-               // Assert.Equal(HttpStatusCode.NoContent, deleteResponse.StatusCode);
+                Assert.Equal(HttpStatusCode.NoContent, deleteResponse.StatusCode);
             }
         }
 
