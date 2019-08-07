@@ -76,7 +76,7 @@ namespace BangazonAPI.Controllers
                             {
                                 Id = reader.GetInt32(reader.GetOrdinal("Id")),
                                 Name = reader.GetString(reader.GetOrdinal("Name")),
-                                AccountNumber = reader.GetInt32(reader.GetOrdinal("AcctNumber"))
+                                AcctNumber = reader.GetInt32(reader.GetOrdinal("AcctNumber"))
                             };
                             if( customers.Any(z => z.Id == customer.Id))
                             {
@@ -99,8 +99,9 @@ namespace BangazonAPI.Controllers
             }
         }
         // GET api/values/5
-        [HttpGet("{id}", Name ="GetCustomer")]
-        public IActionResult Get([FromRoute] int id, string include)
+        [HttpGet("{id}", Name = "GetCustomer")]
+        public IActionResult Get([FromRoute] int id, string _include = null)
+
         {
             if (!CustomerExists(id))
             {
@@ -108,7 +109,7 @@ namespace BangazonAPI.Controllers
             }
             string CommandText;
 
-            if (include == "products" && include == "payments")
+            if (_include == "products" && _include == "payments")
             {
                 CommandText = @"
                 SELECT p.Id as paymentId, p.[Name] as paymentName, p.AcctNumber,
@@ -131,27 +132,45 @@ namespace BangazonAPI.Controllers
                 {
                     cmd.CommandText = $"{CommandText} WHERE p.Id = c.Id";
                     cmd.Parameters.Add(new SqlParameter("@customerId", id));
-                    SqlDataReader reader = await cmd.ExecuteReaderAsync();
+                    SqlDataReader reader = cmd.ExecuteReader();
 
                     Customer customer = null;
-                    if (reader.Read())
+                    while (reader.Read())
                     {
-                        Customer customer1 = new Customer
+                        if (customer == null)
                         {
-                            Id = reader.GetInt32(reader.GetOrdinal("Id")),
-                            FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
-                            LastName = reader.GetString(reader.GetOrdinal("LastName")),
-                            paymentId = reader.GetInt32(reader.GetOrdinal("paymentId"))
-                            // You might have more columns
-                        };
+                            Customer customer1 = new Customer
+                            {
+                                Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                                FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
+                                LastName = reader.GetString(reader.GetOrdinal("LastName")),
+                                paymentId = reader.GetInt32(reader.GetOrdinal("paymentId"))
+                                // You might have more columns
+                            };
 
+                        }
+
+                        if (_include == "Products" && _include == "payments")
+                        {
+                            if (!reader.IsDBNull(reader.GetOrdinal("PaymentId")))
+                            {
+                                customer.payments.Add(
+                                    new PaymentType
+                                    {
+                                        Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                                        Name = reader.GetString(reader.GetOrdinal("Name")),
+                                        AcctNumber = reader.GetInt32(reader.GetOrdinal("AcctNumber")),
+                                        CustomerId = reader.GetInt32(reader.GetOrdinal("customerId"))
+                                    });
+
+                            }
+                        }
+
+
+                        reader.Close();
+
+                        return Ok(customer);
                     }
-
-                    (include == "Products" && include == "payments")
-                     
-                    reader.Close();
-
-                    return Ok(customer);
                 }
             }
         }
