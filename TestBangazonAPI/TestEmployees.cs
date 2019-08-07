@@ -38,6 +38,37 @@ namespace TestBangazonAPI
                 Assert.True(employees.Count > 0);
             }
         }
+
+        [Fact]
+        public async Task Test_Get_One_Employee()
+        {
+            using (var client = new APIClientProvider().Client)
+            {
+                /*
+                    ARRANGE
+                */
+
+
+                /*
+                    ACT
+                */
+                var response = await client.GetAsync("/api/employees/1");
+
+
+                string responseBody = await response.Content.ReadAsStringAsync();
+                var employee = JsonConvert.DeserializeObject<Employee>(responseBody);
+
+                /*
+                    ASSERT
+                */
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                Assert.Equal("Maximilianus", employee.FirstName);
+            }
+        }
+
+
+
+
     }
 }
         

@@ -39,7 +39,7 @@ namespace BangazonAPI.Controllers
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
-                    cmd.CommandText = @"SELECT a.Id, a.FirstName, a.LastName, a.DepartmentId, a.isSupervisor
+                    cmd.CommandText = @"SELECT a.Id, a.FirstName, a.LastName, a.DepartmentId, a.IsSupervisor
                                         FROM Employee a"; ;
                     SqlDataReader reader = await cmd.ExecuteReaderAsync();
 
@@ -52,7 +52,7 @@ namespace BangazonAPI.Controllers
                             FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
                             LastName = reader.GetString(reader.GetOrdinal("LastName")),
                             DepartmentId = reader.GetInt32(reader.GetOrdinal("DepartmentId")),
-                            isSupervisor = reader.GetBoolean(reader.GetOrdinal("isSupervisor"))
+                            IsSupervisor = reader.GetBoolean(reader.GetOrdinal("IsSupervisor"))
 
                             // You might have more columns
                         };
@@ -63,6 +63,44 @@ namespace BangazonAPI.Controllers
                     reader.Close();
 
                     return Ok(employees);
+                }
+            }
+        }
+
+
+        // GET api/values/5
+        [HttpGet("{id}", Name = "GetEmployee")]
+        public async Task<IActionResult> Get(int id)
+        {
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @"
+                        SELECT
+                            Id, FirstName, LastName, DepartmentId, IsSupervisor 
+                        FROM Employee
+                        WHERE Id = @id"; ;
+                    cmd.Parameters.Add(new SqlParameter("@id", id));
+                    SqlDataReader reader = await cmd.ExecuteReaderAsync();
+
+                    Employee employee = null;
+                    if (reader.Read())
+                    {
+                        employee = new Employee
+                        {
+                            Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                            FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
+                            LastName = reader.GetString(reader.GetOrdinal("LastName")),
+                            DepartmentId = reader.GetInt32(reader.GetOrdinal("DepartmentId")),
+                            IsSupervisor = reader.GetBoolean(reader.GetOrdinal("IsSupervisor"))
+                        };
+                    }
+
+                    reader.Close();
+
+                    return Ok(employee);
                 }
             }
         }
