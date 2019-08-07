@@ -35,10 +35,12 @@ namespace BangazonAPI.Controllers
         public async Task<IActionResult> Get( string q)
         {
             string SqlCommandText = @" 
-                SELECT p.Id as paymentId, p.[Name] as paymentName, p.AcctNumber,
-                 c.Id as customerId, c.FirstName as customerFirst, c.LastName as customerLast
-               FROM PaymentType p
-                JOIN customer c ON c.Id = p.Id; ";
+                SELECT   c.Id as customerId, c.FirstName as First, c.LastName as Last,
+                    p.[Name] as paymentName, p.AcctNumber, p.Id
+               
+                    FROM customer c
+                     JOIN PaymentType p ON c.id = p.CustomerId
+                 ";
             if (q != null)
             {
                 SqlCommandText = $@"{SqlCommandText} WHERE (
@@ -69,7 +71,7 @@ namespace BangazonAPI.Controllers
                                 Id = reader.GetInt32(reader.GetOrdinal("Id")),
                                 FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
                                 LastName = reader.GetString(reader.GetOrdinal("LastName")),
-                                paymentId = reader.GetInt32(reader.GetOrdinal("Id"))
+                              
                                 // You might have more columns
                             };
                             PaymentType payment = new PaymentType
@@ -112,10 +114,12 @@ namespace BangazonAPI.Controllers
             if (_include == "products" && _include == "payments")
             {
                 CommandText = @"
-                SELECT p.Id as paymentId, p.[Name] as paymentName, p.AcctNumber,
-                 c.Id as customerId, c.FirstName as customerFirst, c.LastName as customerLast
-               FROM PaymentType p
-                JOIN customer c ON c.Id = p.Id;";
+               SELECT   c.Id as customerId, c.FirstName as First, c.LastName as Last,
+                p.[Name] as paymentName, p.AcctNumber, p.Id
+               
+               FROM customer c
+                JOIN PaymentType p ON c.id = p.CustomerId
+                ";
             }
             else
             {
@@ -144,7 +148,7 @@ namespace BangazonAPI.Controllers
                                 Id = reader.GetInt32(reader.GetOrdinal("Id")),
                                 FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
                                 LastName = reader.GetString(reader.GetOrdinal("LastName")),
-                                paymentId = reader.GetInt32(reader.GetOrdinal("paymentId"))
+                              
                                 // You might have more columns
                             };
 
