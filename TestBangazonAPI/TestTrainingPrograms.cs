@@ -77,8 +77,8 @@ namespace TestBangazonAPI
                 TrainingProgram Program = new TrainingProgram
                 {
                     Name = "Treveccll",
-                    StartDate = DateTime.Parse("2020-01-01 13:00:00"),
-                    EndDate = DateTime.Parse("2019-01-07 13:00:00"),
+                    StartDate = new DateTime(2015, 08, 11, 00, 00, 00, 000),
+                    EndDate = new DateTime(2016, 07, 13, 00, 00, 00, 000),
                     MaxAttendees = 55,
                     
                 };

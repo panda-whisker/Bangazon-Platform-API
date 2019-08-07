@@ -115,12 +115,12 @@ namespace BangazonAPI.Controllers
                     cmd.CommandText = @"
                         INSERT INTO TrainingProgram (Name, StartDate, EndDate, MaxAttendees)
                         OUTPUT INSERTED.Id
-                        VALUES (@name, @startDate, @endDate, @maxAttendees);
+                        VALUES (@Name, @StartDate, @EndDate, @MaxAttendees);
                     ";
-                    cmd.Parameters.Add(new SqlParameter("@name", trainingProgram.Name));
-                    cmd.Parameters.Add(new SqlParameter("@startDate", trainingProgram.StartDate));
-                    cmd.Parameters.Add(new SqlParameter("@endDate", trainingProgram.EndDate));
-                    cmd.Parameters.Add(new SqlParameter("@maxAttendees", trainingProgram.MaxAttendees));
+                    cmd.Parameters.Add(new SqlParameter("@Name", trainingProgram.Name));
+                    cmd.Parameters.Add(new SqlParameter("@StartDate", trainingProgram.StartDate));
+                    cmd.Parameters.Add(new SqlParameter("@EndDate", trainingProgram.EndDate));
+                    cmd.Parameters.Add(new SqlParameter("@MaxAttendees", trainingProgram.MaxAttendees));
 
                     trainingProgram.Id = (int)await cmd.ExecuteScalarAsync();
 
