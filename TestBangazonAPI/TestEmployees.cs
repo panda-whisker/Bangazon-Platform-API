@@ -62,7 +62,7 @@ namespace TestBangazonAPI
                     ASSERT
                 */
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                Assert.Equal("Maximilianus", employee.FirstName);
+                Assert.Equal("Ricky", employee.FirstName);
             }
         }
 
@@ -111,6 +111,48 @@ namespace TestBangazonAPI
                     ASSERT
                 */
                 Assert.Equal(HttpStatusCode.NoContent, deleteResponse.StatusCode);
+            }
+        }
+
+        [Fact]
+        public async Task Test_Modify_Employee()
+        {
+           
+            string NewEmployee = "Ricky";
+
+            using (var client = new APIClientProvider().Client)
+            {
+                /*
+                    PUT section
+                 */
+                Employee ModifiedEmployee = new Employee
+                {
+                    FirstName = "Ricky",
+                    LastName = "McConnell",
+                    DepartmentId = 1,
+                    IsSupervisor = true,
+                };
+                var ModifiedEmployeeAsJSON = JsonConvert.SerializeObject(ModifiedEmployee);
+
+                var response = await client.PutAsync(
+                    "/api/employees/1",
+                    new StringContent(ModifiedEmployeeAsJSON, Encoding.UTF8, "application/json")
+                );
+                string responseBody = await response.Content.ReadAsStringAsync();
+
+                Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+
+                /*
+                    GET section
+                 */
+                var Hacker = await client.GetAsync("/api/employees/1");
+                Hacker.EnsureSuccessStatusCode();
+
+                string GetEmployeeBody = await Hacker.Content.ReadAsStringAsync();
+                Employee NewHacker = JsonConvert.DeserializeObject<Employee>(GetEmployeeBody);
+
+                Assert.Equal(HttpStatusCode.OK, Hacker.StatusCode);
+                Assert.Equal(NewEmployee, NewHacker.FirstName);
             }
         }
 

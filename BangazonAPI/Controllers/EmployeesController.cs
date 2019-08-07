@@ -168,6 +168,57 @@ namespace BangazonAPI.Controllers
             }
         }
 
+
+        // PUT api/
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Put(int id, [FromBody] Employee employee)
+        {
+            try
+            {
+                using (SqlConnection conn = Connection)
+                {
+                    conn.Open();
+                    using (SqlCommand cmd = conn.CreateCommand())
+                    {
+                        cmd.CommandText = @"
+                             UPDATE Employee
+                             SET FirstName = @FirstName,
+                                 LastName = @LastName,
+                                 DepartmentId = @DepartmentId,
+                                 IsSupervisor = @IsSupervisor
+                             WHERE Id = @id
+                         ";
+                        cmd.Parameters.Add(new SqlParameter("@id", id));
+                        cmd.Parameters.Add(new SqlParameter("@FirstName", employee.FirstName));
+                        cmd.Parameters.Add(new SqlParameter("@LastName", employee.LastName));
+                        cmd.Parameters.Add(new SqlParameter("@DepartmentId", employee.DepartmentId));
+                        cmd.Parameters.Add(new SqlParameter("@IsSupervisor", employee.IsSupervisor)); ;
+
+                        int rowsAffected = await cmd.ExecuteNonQueryAsync();
+
+                        if (rowsAffected > 0)
+                        {
+                            return new StatusCodeResult(StatusCodes.Status204NoContent);
+                        }
+
+                        throw new Exception("No rows affected");
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                if (!EmployeeExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+        }
+
+
         private bool EmployeeExists(int id)
         {
             using (SqlConnection conn = Connection)
