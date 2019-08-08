@@ -34,6 +34,9 @@ namespace BangazonAPI.Controllers
         [HttpGet]
         public async Task<IActionResult> Get()
         {
+
+            //Join Table for Employees are completed
+            //Department needs to be written
             string EmployeeSQL
             = @"SELECT tp.id AS TPId, Name, StartDate, EndDate, MaxAttendees, DepartmentId, IsSupervisor,
               e.id AS EmployeeId, FirstName, LastName FROM TrainingProgram tp
@@ -50,6 +53,7 @@ namespace BangazonAPI.Controllers
 
                     SqlDataReader reader = await cmd.ExecuteReaderAsync();
 
+                    //List not taking arguments for ContainKey below
                     Dictionary<int, TrainingProgram> TrainingJoinList = new Dictionary<int, TrainingProgram>();
 
                     while (reader.Read())
