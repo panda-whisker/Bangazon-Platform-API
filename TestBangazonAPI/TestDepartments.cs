@@ -126,7 +126,7 @@ namespace TestBangazonAPI
                 var ModifiedDeptAsJSON = JsonConvert.SerializeObject(ModifiedDepartment);
 
                 var response = await client.PutAsync(
-                    "/api/departments/3",
+                    "/api/departments/1",
                     new StringContent(ModifiedDeptAsJSON, Encoding.UTF8, "application/json")
                 );
                 string responseBody = await response.Content.ReadAsStringAsync();
@@ -136,7 +136,7 @@ namespace TestBangazonAPI
                 /*
                     GET section
                  */
-                var GetDept = await client.GetAsync("/api/departments/3");
+                var GetDept = await client.GetAsync("/api/departments/1");
                 GetDept.EnsureSuccessStatusCode();
 
                 string GetDeptBody = await GetDept.Content.ReadAsStringAsync();
