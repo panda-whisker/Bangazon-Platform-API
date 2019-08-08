@@ -54,17 +54,7 @@ namespace BangazonAPI.Controllers
                             Budget = reader.GetInt32(reader.GetOrdinal("Budget"))
                         };
 
-                        //if (department.Budget >= 300000)
-                        //{
-                        //    departments.Add(department);
-
-                        //} else
-                        //{
-                        //    return null;
-                        //}
-
-
-                        
+                        departments.Add(department);
                     }
 
                     reader.Close();
@@ -75,7 +65,7 @@ namespace BangazonAPI.Controllers
         }
 
         [HttpGet("{id}", Name = "GetDepartment")]
-        public IActionResult Get([FromRoute] int id)
+        public IActionResult Get([FromRoute] int id, string _filter)
         {
             using (SqlConnection conn = Connection)
             {
@@ -83,7 +73,7 @@ namespace BangazonAPI.Controllers
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
                     cmd.CommandText = @"SELECT Id, Name, Budget
-                                        FROM Department WHERE Id = @id";
+                                        FROM Department WHERE (Budget >= 300000), Id = @id";
                     cmd.Parameters.Add(new SqlParameter("@id", id));
                     SqlDataReader reader = cmd.ExecuteReader();
 
