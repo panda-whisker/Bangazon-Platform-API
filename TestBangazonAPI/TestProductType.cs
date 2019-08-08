@@ -93,7 +93,7 @@ namespace TestBangazonAPI
             }
         }
         [Fact]
-        public async Task Test_Modify_PaymentType()
+        public async Task Test_Modify_ProductType()
         {
             // New shoe name value to change to and test
             string NewName = "Loafer";
@@ -131,30 +131,30 @@ namespace TestBangazonAPI
                 Assert.Equal(NewName, NewShoe.Name);
             }
         }
-         
-        //[Fact]
-        //public async Task Test_Get_NonExistant_ProductType_Fails()
-        //{
-            
-        //    using (var client = new APIClientProvider().Client)
-        //    {
-        //        var response = await client.GetAsync("/api/productType/999999999");
 
-        //        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-        //    }
-        //}
+        [Fact]
+        public async Task Test_Get_NonExistant_ProductType_Fails()
+        {
 
-        //[Fact]
-        //public async Task Test_Delete_NonExistant_ProductType_Fails()
-        //{
+            using (var client = new APIClientProvider().Client)
+            {
+                var response = await client.GetAsync("/api/ProductType/999999999");
 
-        //    using (var client = new APIClientProvider().Client)
-        //    {
-        //        var deleteResponse = await client.DeleteAsync("/api/productType/600000");
-        //        Assert.False(deleteResponse.IsSuccessStatusCode);
-        //        Assert.Equal(HttpStatusCode.NotFound, deleteResponse.StatusCode);
-        //    }
-        //}
+                Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+            }
+        }
+
+        [Fact]
+        public async Task Test_Delete_NonExistant_ProductType_Fails()
+        {
+
+            using (var client = new APIClientProvider().Client)
+            {
+                var deleteResponse = await client.DeleteAsync("/api/productType/600000");
+                Assert.False(deleteResponse.IsSuccessStatusCode);
+                Assert.Equal(HttpStatusCode.NotFound, deleteResponse.StatusCode);
+            }
+        }
 
 
     }
