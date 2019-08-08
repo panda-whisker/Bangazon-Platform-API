@@ -34,31 +34,58 @@ namespace BangazonAPI.Controllers
         [HttpGet]
         public async Task<IActionResult> Get()
         {
+            string EmployeeSQL
+            = @"SELECT tp.id AS TPId, Name, StartDate, EndDate, MaxAttendees, DepartmentId, IsSupervisor,
+              e.id AS EmployeeId, FirstName, LastName FROM TrainingProgram tp
+               
+              LEFT JOIN EmployeeTraining et on et.TrainingProgramId = tp.id
+              LEFT JOIN Employee e on et.EmployeeId = e.Id";
+
             using (SqlConnection conn = Connection)
             {
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
-                    cmd.CommandText = @"SELECT a.Id, a.Name, a.StartDate, a.EndDate, a.MaxAttendees
-                                        FROM TrainingProgram a"; ;
+                    cmd.CommandText = EmployeeSQL;
+
                     SqlDataReader reader = await cmd.ExecuteReaderAsync();
 
-                    List<TrainingProgram> trainingPrograms = new List<TrainingProgram>();
+                    Dictionary<int, TrainingProgram> TrainingJoinList = new Dictionary<int, TrainingProgram>();
+
                     while (reader.Read())
                     {
-                        TrainingProgram trainingProgram = new TrainingProgram
-                        {
-                            Id = reader.GetInt32(reader.GetOrdinal("Id")),
-                            Name = reader.GetString(reader.GetOrdinal("Name")),
-                            StartDate = reader.GetDateTime(reader.GetOrdinal("StartDate")),
-                            EndDate = reader.GetDateTime(reader.GetOrdinal("EndDate")),
-                            MaxAttendees = reader.GetInt32(reader.GetOrdinal("MaxAttendees"))
-                            // You might have more columns
-                        };
+                        int TrainingProgramId = reader.GetInt32(reader.GetOrdinal("TPId"));
+                        bool NullEmployeeId = reader.IsDBNull(reader.GetOrdinal("EmployeeId"));
 
-                        trainingPrograms.Add(trainingProgram);
+                        if (!TrainingJoinList.ContainsKey(TrainingProgramId))
+                        {
+                            TrainingJoinList[TrainingProgramId] = new TrainingProgram
+
+                            {
+                                Id = reader.GetInt32(reader.GetOrdinal("TPId")),
+                                Name = reader.GetString(reader.GetOrdinal("Name")),
+                                StartDate = reader.GetDateTime(reader.GetOrdinal("StartDate")),
+                                EndDate = reader.GetDateTime(reader.GetOrdinal("EndDate")),
+                                MaxAttendees = reader.GetInt32(reader.GetOrdinal("MaxAttendees")),
+                            };
+                        }
+
+                        if (NullEmployeeId == false)
+                        {
+
+                            TrainingJoinList[TrainingProgramId].AttendingEmployees.Add(new Employee
+                            {
+                                Id = reader.GetInt32(reader.GetOrdinal("EmployeeId")),
+                                FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
+                                LastName = reader.GetString(reader.GetOrdinal("LastName")),
+                                IsSupervisor = reader.GetBoolean(reader.GetOrdinal("IsSupervisor")),
+                                DepartmentId = reader.GetInt32(reader.GetOrdinal("DepartmentId"))
+                            });
+                        }
+
                     }
 
+                    List<TrainingProgram> trainingPrograms = TrainingJoinList.Values.ToList();
                     reader.Close();
 
                     return Ok(trainingPrograms);
