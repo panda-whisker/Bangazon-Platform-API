@@ -54,7 +54,17 @@ namespace BangazonAPI.Controllers
                             Budget = reader.GetInt32(reader.GetOrdinal("Budget"))
                         };
 
-                        departments.Add(department);
+                        //if (department.Budget >= 300000)
+                        //{
+                        //    departments.Add(department);
+
+                        //} else
+                        //{
+                        //    return null;
+                        //}
+
+
+                        
                     }
 
                     reader.Close();
