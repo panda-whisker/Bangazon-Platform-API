@@ -111,7 +111,7 @@ namespace TestBangazonAPI
         var ModifiedShoeAsJSON = JsonConvert.SerializeObject(ModifiedShoe);
 
         var response = await client.PutAsync(
-            "/api/productType/4",
+            "/api/productType/1",
             new StringContent(ModifiedShoeAsJSON, Encoding.UTF8, "application/json")
         );
         string responseBody = await response.Content.ReadAsStringAsync();
@@ -121,7 +121,7 @@ namespace TestBangazonAPI
                 /*
                     GET section
                  */
-                var GetShoe = await client.GetAsync("/api/productType/4");
+                var GetShoe = await client.GetAsync("/api/productType/1");
         GetShoe.EnsureSuccessStatusCode();
 
                 string GetShoeBody = await GetShoe.Content.ReadAsStringAsync();
