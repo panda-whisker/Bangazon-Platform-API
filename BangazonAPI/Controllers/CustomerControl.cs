@@ -30,167 +30,241 @@ namespace BangazonAPI.Controllers
             }
         }
 
+
         // GET api/customers
         [HttpGet]
-        public async Task<IActionResult> Get(string q, string _include)
+        public async Task<IActionResult> Get([FromRoute]string q, string _includes)
         {
-            string SqlCommandText = @" 
-                SELECT   c.Id as customerId, c.FirstName as First, c.LastName as Last,
-                    p.[Name] as paymentName, p.AcctNumber, p.Id
-               
-                    FROM customer c
-                     JOIN PaymentType p ON c.id = p.CustomerId
-                        WHERE 1 = 1
-                 ";
+            string sql = @"SELECT c.Id, c.FirstName, 
+                                    c.LastName, 
+                                    pt.Id AS PaymentTypeId, 
+                                    pt.AcctNumber, 
+                                    pt.CustomerId, 
+                                    pt.Name,
+                                    p.Id AS ProductId,
+                                    p.ProductTypeId,
+                                    p.CustomerId,
+                                    p.Price,
+                                    p.Title,
+                                    p.Description,
+                                    p.Quantity
+                                    FROM Customer c
+                                    LEFT JOIN PaymentType pt ON pt.CustomerId = c.Id
+                                    LEFT JOIN Product p ON p.CustomerId = c.Id
+                                    WHERE 2=2";
+
+            if (q != null)
+            {
+                sql = $@"{sql} AND (
+                    c.LastName LIKE @q
+                    OR c.FirstName LIKE @q
+                    )
+                    ";
+
+            }
+
             using (SqlConnection conn = Connection)
             {
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
-
+                    cmd.CommandText = sql;
                     if (q != null)
                     {
-                        SqlCommandText = $@"{SqlCommandText} AND (
-                             c.FirstName LIKE @q OR c.LastName LIKE @q
-                                )";
-                        cmd.Parameters.Add(new SqlParameter("@q", $"%{q}"));
+                        cmd.Parameters.Add(new SqlParameter("@q", $"%{q}%"));
+
                     }
 
-
-                    cmd.CommandText = SqlCommandText;
                     SqlDataReader reader = await cmd.ExecuteReaderAsync();
 
                     List<Customer> customers = new List<Customer>();
 
                     while (reader.Read())
                     {
-                        if (customers == null)
+
+                        Customer customer;
+                        List<Product> products = new List<Product>();
+                        List<PaymentType> paymentTypes = new List<PaymentType>();
+
+                        if (!customers.Exists(a => a.Id == reader.GetInt32(reader.GetOrdinal("Id"))))
                         {
-                            Customer customer = new Customer
+                            customer = new Customer
                             {
-                                Id = reader.GetInt32(reader.GetOrdinal("customerId")),
-                                FirstName = reader.GetString(reader.GetOrdinal("First")),
-                                LastName = reader.GetString(reader.GetOrdinal("Last")),
-
-                                // You might have more columns
+                                Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                                FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
+                                LastName = reader.GetString(reader.GetOrdinal("LastName")),
+                                PaymentTypes = paymentTypes,
+                                Products = products,
+                                Orders = new List<Order>()
                             };
-                            PaymentType payment = new PaymentType
-                            {
-                                Id = reader.GetInt32(reader.GetOrdinal("paymentId")),
-                                Name = reader.GetString(reader.GetOrdinal("paymentName")),
-                                AcctNumber = reader.GetInt32(reader.GetOrdinal("paymentName"))
-                            };
-
-                            if (customers.Any(z => z.Id == customer.Id))
-                            {
-                                Customer ExistingCustomer = customers.Find(z => z.Id == customer.Id);
-                                ExistingCustomer.Payments.Add(payment);
-                            }
-                            else
-                            {
-                                customer.Payments.Add(payment);
-                                customers.Add(customer);
-                            }
-
-
                             customers.Add(customer);
                         }
-                        reader.Close();
-                        return Ok(customers);
+                        Customer customer1 = customers.Find(a => a.Id == reader.GetInt32(reader.GetOrdinal("Id")));
+
+                        if (_includes == "payments" && !reader.IsDBNull(reader.GetOrdinal("PaymentTypeId")))
+                        {
+                            PaymentType paymentType = new PaymentType
+                            {
+                                Id = reader.GetInt32(reader.GetOrdinal("PaymentTypeId")),
+                                CustomerId = reader.GetInt32(reader.GetOrdinal("Id")),
+                                Name = reader.GetString(reader.GetOrdinal("Name")),
+                                AcctNumber = reader.GetInt32(reader.GetOrdinal("AcctNumber"))
+                            };
+
+                            if (customer1.Id == paymentType.CustomerId && !customer1.Products.Exists(a => a.Id == reader.GetInt32(reader.GetOrdinal("PaymentTypeId"))))
+                            {
+                                customer1.PaymentTypes.Add(paymentType);
+                            }
+                        }
+                        if (_includes == "products" && !reader.IsDBNull(reader.GetOrdinal("ProductId")))
+                        {
+                            Product product = new Product
+                            {
+                                Id = reader.GetInt32(reader.GetOrdinal("ProductId")),
+                                ProductTypeId = reader.GetInt32(reader.GetOrdinal("ProductTypeId")),
+                                CustomerId = reader.GetInt32(reader.GetOrdinal("Id")),
+                                Price = reader.GetDecimal(reader.GetOrdinal("Price")),
+                                Title = reader.GetString(reader.GetOrdinal("Title")),
+                                Description = reader.GetString(reader.GetOrdinal("Description")),
+                                Quantity = reader.GetInt32(reader.GetOrdinal("Quantity"))
+                            };
+                            if (customer1.Id == product.CustomerId && !customer1.Products.Exists(a => a.Id == reader.GetInt32(reader.GetOrdinal("ProductId"))))
+                            {
+                                customer1.Products.Add(product);
+                            }
+                        }
 
 
                     }
+
+                    reader.Close();
+
+                    return Ok(customers);
                 }
             }
         }
 
-
-       [HttpGet("{id}", Name = "GetCustomer")]
-        public IActionResult Get([FromRoute] int id, string _include)
-
+        // GET api/values/5
+        [HttpGet("{id}", Name = "GetCustomer")]
+        public async Task<IActionResult> Get([FromRoute]int id, string _includes)
         {
             if (!CustomerExists(id))
             {
                 return new StatusCodeResult(StatusCodes.Status404NotFound);
             }
-            string SqlCommandText;
+
+            string sql = @"SELECT c.Id, c.FirstName, 
+                                    c.LastName, 
+                                    pt.Id AS PaymentTypeId, 
+                                    pt.AcctNumber, 
+                                    pt.CustomerId, 
+                                    pt.Name,
+                                    p.Id AS ProductId,
+                                    p.ProductTypeId,
+                                    p.CustomerId,
+                                    p.Price,
+                                    p.Title,
+                                    p.Description,
+                                    p.Quantity
+                                    FROM Customer c
+                                    LEFT JOIN PaymentType pt ON pt.CustomerId = c.Id
+                                    LEFT JOIN Product p ON p.CustomerId = c.Id
+                                    WHERE c.Id = @id";
+
+            using (SqlConnection conn = Connection)
             {
-                if (_include == "payments")
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
                 {
-                    SqlCommandText = @"SELECT c.Id,
-                                                  c.FirstName,
-                                                  c.LastName,
-                                                  p.Id AS PaymentTypeId,
-                                                  p.AcctNumber,
-                                                  p.Name
-                                           FROM Customer c
-                                           LEFT OUTER JOIN PaymentType p
-                                               ON p.CustomerId = c.Id";
-                }
-                else
-                {
-                    SqlCommandText = @"
-                        SELECT c.Id, c.FirstName, c.LastName
-                            FROM customer c";
-                }
+                    cmd.CommandText = sql;
+                    cmd.Parameters.Add(new SqlParameter("@id", id));
+                    SqlDataReader reader = await cmd.ExecuteReaderAsync();
 
-                using (SqlConnection conn = Connection)
-                {
-                    conn.Open();
-                    using (SqlCommand cmd = conn.CreateCommand())
 
+                    Customer customer = null;
+
+                    List<Product> products = new List<Product>();
+                    List<PaymentType> paymentTypes = new List<PaymentType>();
+
+                    if (reader.Read())
                     {
-                        cmd.CommandText = @"
-                            SELECT 
-                                Id, FirstName , LastName
-                                  FROM customer
-                                    WHERE Id = @customerId";
-                        cmd.Parameters.Add(new SqlParameter("@customerId", id));
-                        SqlDataReader reader = cmd.ExecuteReader();
 
-                        Customer customer = null;
-                        while (reader.Read())
+                        customer = new Customer
                         {
-                            if (customer == null)
+                            Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                            FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
+                            LastName = reader.GetString(reader.GetOrdinal("LastName")),
+                            PaymentTypes = paymentTypes,
+                            Products = products,
+                            Orders = new List<Order>()
+                        };
+                        if (_includes == "payments" && !reader.IsDBNull(reader.GetOrdinal("PaymentTypeId")))
+                        {
+                            PaymentType paymentType = new PaymentType
                             {
-                                Customer customer1 = new Customer
-                                {
-                                    Id = reader.GetInt32(reader.GetOrdinal("Id")),
-                                    FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
-                                    LastName = reader.GetString(reader.GetOrdinal("LastName")),
+                                Id = reader.GetInt32(reader.GetOrdinal("PaymentTypeId")),
+                                CustomerId = reader.GetInt32(reader.GetOrdinal("Id")),
+                                Name = reader.GetString(reader.GetOrdinal("Name")),
+                                AcctNumber = reader.GetInt32(reader.GetOrdinal("AcctNumber"))
+                            };
 
-                                    // You might have more columns
-                                };
-
-                            }
-
-                            if (_include == "Products" && _include == "payments")
+                            if (customer.Id == paymentType.CustomerId && !customer.Products.Exists(a => a.Id == reader.GetInt32(reader.GetOrdinal("PaymentTypeId"))))
                             {
-                                if (!reader.IsDBNull(reader.GetOrdinal("Id")))
-                                {
-                                    customer.Payments.Add(
-                                        new PaymentType
-                                        {
-                                            Id = reader.GetInt32(reader.GetOrdinal("Id")),
-                                            Name = reader.GetString(reader.GetOrdinal("Name")),
-                                            AcctNumber = reader.GetInt32(reader.GetOrdinal("AcctNumber")),
-                                            CustomerId = reader.GetInt32(reader.GetOrdinal("customerId"))
-                                        });
-
-                                }
+                                customer.PaymentTypes.Add(paymentType);
                             }
                         }
-
-                        reader.Close();
-
-                        return Ok(customer);
+                        if (_includes == "products" && !reader.IsDBNull(reader.GetOrdinal("ProductId")))
+                        {
+                            Product product = new Product
+                            {
+                                Id = reader.GetInt32(reader.GetOrdinal("ProductId")),
+                                ProductTypeId = reader.GetInt32(reader.GetOrdinal("ProductTypeId")),
+                                CustomerId = reader.GetInt32(reader.GetOrdinal("Id")),
+                                Price = reader.GetDecimal(reader.GetOrdinal("Price")),
+                                Title = reader.GetString(reader.GetOrdinal("Title")),
+                                Description = reader.GetString(reader.GetOrdinal("Description")),
+                                Quantity = reader.GetInt32(reader.GetOrdinal("Quantity"))
+                            };
+                            if (customer.Id == product.CustomerId && !customer.Products.Exists(a => a.Id == reader.GetInt32(reader.GetOrdinal("ProductId"))))
+                            {
+                                customer.Products.Add(product);
+                            }
+                        }
                     }
-                }
-            } }
+                    reader.Close();
 
-  // PUT api/values/5
+                    return Ok(customer);
+                }
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Post([FromBody] Customer customer)
+        {
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    // More string interpolation
+                    cmd.CommandText = @"
+                        INSERT INTO Customer (FirstName, LastName)
+                        OUTPUT INSERTED.Id
+                        VALUES (@firstName, @lastName)
+                    ";
+                    cmd.Parameters.Add(new SqlParameter("@firstName", customer.FirstName));
+                    cmd.Parameters.Add(new SqlParameter("@lastName", customer.LastName));
+                    int newId = (int)await cmd.ExecuteScalarAsync();
+                    customer.Id = newId;
+
+                    return CreatedAtRoute("GetCustomer", new { id = newId }, customer);
+                }
+            }
+        }
+
+        // PUT api/values/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(int id, [FromBody] Customer customer)
+        public async Task<IActionResult> Put([FromRoute] int id, [FromBody] Customer customer)
         {
             try
             {
@@ -201,12 +275,13 @@ namespace BangazonAPI.Controllers
                     {
                         cmd.CommandText = @"
                             UPDATE Customer
-                            SET FirstName = @firstName
-                            -- Set the remaining columns here
+                            SET FirstName = @firstName,
+                            LastName = @lastName
                             WHERE Id = @id
                         ";
-                        cmd.Parameters.Add(new SqlParameter("@id", customer.Id));
+                        cmd.Parameters.Add(new SqlParameter("@id", id));
                         cmd.Parameters.Add(new SqlParameter("@firstName", customer.FirstName));
+                        cmd.Parameters.Add(new SqlParameter("@lastName", customer.LastName));
 
                         int rowsAffected = await cmd.ExecuteNonQueryAsync();
 
@@ -232,6 +307,41 @@ namespace BangazonAPI.Controllers
             }
         }
 
+        //DELETE api/values/5
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            try
+            {
+                using (SqlConnection conn = Connection)
+                {
+                    conn.Open();
+                    using (SqlCommand cmd = conn.CreateCommand())
+                    {
+                        cmd.CommandText = @"DELETE FROM Customer WHERE Id = @id";
+                        cmd.Parameters.Add(new SqlParameter("@id", id));
+
+                        int rowsAffected = await cmd.ExecuteNonQueryAsync();
+                        if (rowsAffected > 0)
+                        {
+                            return new StatusCodeResult(StatusCodes.Status204NoContent);
+                        }
+                        throw new Exception("No rows affected");
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                if (!CustomerExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+        }
 
         private bool CustomerExists(int id)
         {

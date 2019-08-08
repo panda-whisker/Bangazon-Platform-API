@@ -27,7 +27,7 @@ namespace TestBangazonAPI
                 /*
                     ACT
                 */
-                var response = await client.GetAsync("/api/customers");
+                var response = await client.GetAsync("/api/customer");
 
 
                 string responseBody = await response.Content.ReadAsStringAsync();
@@ -56,7 +56,7 @@ namespace TestBangazonAPI
                 /*
                     ACT
                 */
-                var response = await client.GetAsync("/api/customers");
+                var response = await client.GetAsync("/api/customer");
 
 
                 string responseBody = await response.Content.ReadAsStringAsync();
@@ -90,7 +90,7 @@ namespace TestBangazonAPI
                 /*
                     ACT
                 */
-                var response = await client.PostAsync("/api/customers",
+                var response = await client.PostAsync("/api/customer",
                     new StringContent(JimmyAsJSON, Encoding.UTF8, "application/json"));
 
 
